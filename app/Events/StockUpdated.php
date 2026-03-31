@@ -13,6 +13,8 @@ class StockUpdated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    // Event ini dikirim setiap kali stok berubah agar frontend / dashboard
+    // bisa menerima update realtime.
     public function __construct(public Stock $stock)
     {
     }
