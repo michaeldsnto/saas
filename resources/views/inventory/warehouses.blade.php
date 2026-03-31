@@ -1,0 +1,7 @@
+<x-app-layout>
+    <x-slot name="header"><div><p class="text-sm uppercase tracking-[0.3em] text-cyan-300">Inventory</p><h2 class="text-3xl font-semibold">Warehouses</h2></div></x-slot>
+    <div class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <form method="POST" action="{{ route('warehouses.store') }}" class="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-6">@csrf<div><x-input-label for="name" value="Name" /><x-text-input id="name" name="name" class="mt-1 block w-full" /></div><div><x-input-label for="code" value="Code" /><x-text-input id="code" name="code" class="mt-1 block w-full" /></div><div><x-input-label for="address" value="Address" /><textarea id="address" name="address" class="mt-1 block w-full rounded-2xl border-slate-700 bg-slate-950/70 text-slate-100"></textarea></div><label class="flex items-center gap-2 text-sm"><input type="checkbox" name="is_default" value="1"> Default warehouse</label><x-primary-button>Create Warehouse</x-primary-button></form>
+        <div class="rounded-3xl border border-white/10 bg-white/5 p-6"><table class="min-w-full text-left text-sm"><thead class="text-slate-400"><tr><th class="pb-3">Name</th><th class="pb-3">Code</th><th class="pb-3">Default</th></tr></thead><tbody class="divide-y divide-white/5">@foreach($warehouses as $warehouse)<tr><td class="py-3">{{ $warehouse->name }}</td><td class="py-3">{{ $warehouse->code }}</td><td class="py-3">{{ $warehouse->is_default ? 'Yes' : 'No' }}</td></tr>@endforeach</tbody></table></div>
+    </div>
+</x-app-layout>

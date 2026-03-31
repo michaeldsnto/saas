@@ -1,0 +1,4 @@
+<x-app-layout>
+    <x-slot name="header"><div><p class="text-sm uppercase tracking-[0.3em] text-cyan-300">Security</p><h2 class="text-3xl font-semibold">Audit Logs</h2></div></x-slot>
+    <div class="rounded-3xl border border-white/10 bg-white/5 p-6"><table class="min-w-full text-left text-sm"><thead class="text-slate-400"><tr><th class="pb-3">Action</th><th class="pb-3">User</th><th class="pb-3">Entity</th><th class="pb-3">Time</th></tr></thead><tbody class="divide-y divide-white/5">@foreach($logs as $log)<tr><td class="py-3">{{ $log->action }}</td><td class="py-3">{{ $log->user?->name }}</td><td class="py-3">{{ class_basename($log->auditable_type) }} #{{ $log->auditable_id }}</td><td class="py-3">{{ $log->created_at }}</td></tr>@endforeach</tbody></table><div class="mt-4">{{ $logs->links() }}</div></div>
+</x-app-layout>

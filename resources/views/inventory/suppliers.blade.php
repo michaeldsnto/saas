@@ -1,0 +1,7 @@
+<x-app-layout>
+    <x-slot name="header"><div><p class="text-sm uppercase tracking-[0.3em] text-cyan-300">Inventory</p><h2 class="text-3xl font-semibold">Suppliers</h2></div></x-slot>
+    <div class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <form method="POST" action="{{ route('suppliers.store') }}" class="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-6">@csrf<div><x-input-label for="name" value="Name" /><x-text-input id="name" name="name" class="mt-1 block w-full" /></div><div><x-input-label for="email" value="Email" /><x-text-input id="email" name="email" class="mt-1 block w-full" /></div><div><x-input-label for="phone" value="Phone" /><x-text-input id="phone" name="phone" class="mt-1 block w-full" /></div><div><x-input-label for="contact_person" value="Contact Person" /><x-text-input id="contact_person" name="contact_person" class="mt-1 block w-full" /></div><x-primary-button>Create Supplier</x-primary-button></form>
+        <div class="rounded-3xl border border-white/10 bg-white/5 p-6"><table class="min-w-full text-left text-sm"><thead class="text-slate-400"><tr><th class="pb-3">Name</th><th class="pb-3">Email</th><th class="pb-3">Phone</th></tr></thead><tbody class="divide-y divide-white/5">@foreach($suppliers as $supplier)<tr><td class="py-3">{{ $supplier->name }}</td><td class="py-3">{{ $supplier->email }}</td><td class="py-3">{{ $supplier->phone }}</td></tr>@endforeach</tbody></table></div>
+    </div>
+</x-app-layout>
