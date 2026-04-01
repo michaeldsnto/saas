@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    [x-cloak] {
+        display: none !important;
+    }
+
+    body {
+        @apply selection:bg-cyan-300 selection:text-slate-950;
+    }
+}
+
+@layer components {
+    .mobile-card-grid {
+        @apply grid gap-3 sm:gap-4;
+    }
+
+    .mobile-data-card {
+        @apply rounded-3xl border border-white/10 bg-slate-950/50 p-4 shadow-lg;
+    }
+}
