@@ -12,6 +12,8 @@ trait BelongsToCompany
 {
     public static function bootBelongsToCompany(): void
     {
+        // Saat record baru dibuat, company_id akan otomatis diisi dari tenant
+        // yang sedang aktif. Ini mencegah kita lupa mengisi company_id manual.
         static::creating(function (Model $model): void {
             $tenantId = app(TenantManager::class)->id();
 
@@ -20,6 +22,9 @@ trait BelongsToCompany
             }
         });
 
+        // Global scope ini penting untuk multi-tenant.
+        // Selama ada tenant aktif, query model hanya akan membaca data
+        // milik company tersebut.
         static::addGlobalScope('company', function (Builder $builder): void {
             $tenantId = app(TenantManager::class)->id();
 
@@ -36,6 +41,8 @@ trait BelongsToCompany
 
     public function scopeForCompany(Builder $query, int $companyId): Builder
     {
+        // Scope ini berguna kalau kita memang sengaja ingin memilih company
+        // tertentu tanpa memakai tenant aktif dari request sekarang.
         return $query->withoutGlobalScope('company')->where('company_id', $companyId);
     }
 }

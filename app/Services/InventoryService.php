@@ -14,6 +14,8 @@ class InventoryService
 {
     public function ensureStock(Product $product, Warehouse $warehouse, int $quantity): void
     {
+        // Kalau kombinasi product + warehouse belum punya row stock,
+        // kita buat dulu dengan quantity 0 supaya query berikutnya konsisten.
         $stock = Stock::query()->firstOrCreate([
             'company_id' => $product->company_id,
             'product_id' => $product->id,
@@ -29,6 +31,9 @@ class InventoryService
 
     public function adjustStock(Product $product, Warehouse $warehouse, int $quantity, string $type, ?User $user = null, array $reference = [], ?string $notes = null): Stock
     {
+        // quantity bisa positif atau negatif:
+        // +10 = restock / opening stock
+        // -3  = stok berkurang karena penjualan, retur keluar, dll
         $stock = Stock::query()->firstOrCreate([
             'company_id' => $product->company_id,
             'product_id' => $product->id,
@@ -40,6 +45,8 @@ class InventoryService
         $stock->increment('quantity', $quantity);
         $stock->refresh();
 
+        // Selain ubah stok utama, kita simpan jejak pergerakannya.
+        // Ini membantu audit dan histori stok di dunia nyata.
         StockMovement::create([
             'company_id' => $product->company_id,
             'product_id' => $product->id,
@@ -52,8 +59,11 @@ class InventoryService
             'notes' => $notes,
         ]);
 
+        // Event ini dipakai untuk kebutuhan realtime, misalnya dashboard
+        // atau halaman stok yang ingin ikut berubah tanpa refresh manual.
         broadcast(new StockUpdated($stock))->toOthers();
 
+        // Kalau stok sudah menyentuh batas minimum, kirim alert khusus.
         if ($stock->quantity <= $product->minimum_stock) {
             broadcast(new LowStockDetected($stock))->toOthers();
         }
@@ -63,6 +73,8 @@ class InventoryService
 
     public function lowStockProducts()
     {
+        // Mengambil produk yang total stoknya sudah di bawah atau sama
+        // dengan batas minimum yang ditentukan.
         return Product::query()->with('stocks')->get()->filter(fn (Product $product) => $product->totalStock() <= $product->minimum_stock);
     }
 }

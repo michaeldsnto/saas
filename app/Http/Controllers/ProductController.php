@@ -21,10 +21,15 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
-    public function index(StockPredictionService $predictionService): View
+    public function index(StockPredictionService $predictionService, SubscriptionService $subscriptionService): View
     {
+        $company = auth()->user()->company;
         $products = Product::query()->with(['category', 'supplier', 'stocks.warehouse'])->latest()->paginate(10);
-        $predictions = $products->getCollection()->mapWithKeys(fn ($product) => [$product->id => $predictionService->predictRunOut($product)]);
+        $canUsePrediction = $subscriptionService->hasFeature($company, 'prediction');
+        $canUseImportExport = $subscriptionService->hasFeature($company, 'imports_exports');
+        $predictions = $canUsePrediction
+            ? $products->getCollection()->mapWithKeys(fn ($product) => [$product->id => $predictionService->predictRunOut($product)])
+            : collect();
 
         return view('inventory.products', [
             'products' => $products,
@@ -32,6 +37,9 @@ class ProductController extends Controller
             'suppliers' => Supplier::query()->get(),
             'warehouses' => Warehouse::query()->get(),
             'predictions' => $predictions,
+            'canUsePrediction' => $canUsePrediction,
+            'canUseImportExport' => $canUseImportExport,
+            'currentPlan' => $subscriptionService->currentPlan($company),
         ]);
     }
 
@@ -73,19 +81,25 @@ class ProductController extends Controller
         return back()->with('status', 'Product deleted.');
     }
 
-    public function import(ImportProductsRequest $request): RedirectResponse
+    public function import(ImportProductsRequest $request, SubscriptionService $subscriptionService): RedirectResponse
     {
+        abort_unless($subscriptionService->hasFeature($request->user()->company, 'imports_exports'), 403, 'Import is available on Pro and Enterprise plans.');
+
         Excel::import(new ProductsImport($request->user(), $request->integer('warehouse_id')), $request->file('file'));
         return back()->with('status', 'Products imported successfully.');
     }
 
-    public function exportExcel()
+    public function exportExcel(SubscriptionService $subscriptionService)
     {
+        abort_unless($subscriptionService->hasFeature(auth()->user()->company, 'imports_exports'), 403, 'Export is available on Pro and Enterprise plans.');
+
         return Excel::download(new InventoryReportExport, 'inventory-report.xlsx');
     }
 
-    public function exportPdf()
+    public function exportPdf(SubscriptionService $subscriptionService)
     {
+        abort_unless($subscriptionService->hasFeature(auth()->user()->company, 'imports_exports'), 403, 'Export is available on Pro and Enterprise plans.');
+
         $products = Product::query()->with(['category', 'supplier', 'stocks.warehouse'])->get();
         return Pdf::loadView('reports.inventory-pdf', compact('products'))->download('inventory-report.pdf');
     }

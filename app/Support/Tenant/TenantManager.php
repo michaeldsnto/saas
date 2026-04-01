@@ -6,6 +6,8 @@ use App\Models\Company;
 
 class TenantManager
 {
+    // Kelas kecil ini menyimpan "company yang sedang aktif" selama 1 request.
+    // Model, middleware, dan service lain tinggal membaca dari sini.
     protected ?int $companyId = null;
 
     protected ?Company $company = null;
